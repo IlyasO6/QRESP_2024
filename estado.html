@@ -116,17 +116,50 @@
             padding: 20px;
             width: 100%;
         }
+        
+        .fever-slider {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .fever-slider input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+        }
+
+        .fever-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #3498db;
+            cursor: pointer;
+        }
+
+        .fever-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
     <nav id="nav">
         <div class="toggle-menu" onclick="toggleMenu()">&#8594;</div>
         <ul>
-            <li onclick="window.location.href='/templates/main.html'">Perfil</li>
-            <li onclick="window.location.href='/templates/com_em_trobo.html'">Com em trobo</li>
-            <li onclick="window.location.href='/templates/guia_urgencies.html'">Guia urgències</li>
-            <li onclick="window.location.href='/templates/historial_proves.html'">Historial de proves</li>
-            <li onclick="window.location.href='/templates/centres_medics.html'">Centres mèdics propers</li>
+            <li onclick="window.location.href='/main'">Perfil</li>
+            <li onclick="window.location.href='/com_em_trobo'">Com em trobo</li>
+            <li onclick="window.location.href='/guia_urgencies'">Guia urgències</li>
+            <li onclick="window.location.href='/historial_proves'">Historial de proves</li>
+            <li onclick="window.location.href='/centres_medics'">Centres mèdics propers</li>
+            <li onclick="window.location.href='/novetats'">Novetats</li>
         </ul>
     </nav>
 
@@ -163,6 +196,14 @@
                     <div class="form-group">
                         <label for="symptoms">Símptomes específics:</label>
                         <textarea id="symptoms" name="symptoms" placeholder="Descriu els teus símptomes..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fever">Temperatura (°C):</label>
+                        <div class="fever-slider">
+                            <input type="range" id="fever" name="fever" min="35" max="42" step="0.1" value="36.5">
+                            <span class="fever-value">36.5°C</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -203,8 +244,24 @@
 
         document.getElementById('symptomForm').onsubmit = function(e) {
             e.preventDefault();
-            // Aquí iría la lógica para guardar los síntomas
-            alert('Registre guardat correctament');
+            const datos = {
+                // ... recoger datos del formulario
+            };
+            
+            fetch('/api/guardar_sintomas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert('Registre guardat correctament');
+                    window.location.href = '/com_em_trobo';
+                }
+            });
         };
 
         function loadSymptoms() {
@@ -219,6 +276,23 @@
         dateInput.addEventListener('click', function(e) {
             e.preventDefault();
             return false;
+        });
+        
+        // Actualizar el valor de la temperatura
+        const feverSlider = document.getElementById('fever');
+        const feverValue = feverSlider.nextElementSibling;
+        
+        feverSlider.addEventListener('input', function() {
+            feverValue.textContent = this.value + '°C';
+            
+            // Cambiar el color del texto según la temperatura
+            if (this.value >= 38) {
+                feverValue.style.color = '#e74c3c';
+            } else if (this.value >= 37) {
+                feverValue.style.color = '#f1c40f';
+            } else {
+                feverValue.style.color = '#2c3e50';
+            }
         });
     </script>
 </body>
