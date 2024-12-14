@@ -227,11 +227,70 @@
             document.querySelector('.toggle-menu').innerHTML = toggleIcon;
         }
 
+        async function cargarDatosPerfil() {
+            try {
+                const response = await fetch('/api/cargar_perfil');
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    // Cargar factores de riesgo
+                    if (data.data.factores_riesgo) {
+                        document.getElementById('fumador').textContent = data.data.factores_riesgo.fumador || 'Informació...';
+                        document.getElementById('esports').textContent = data.data.factores_riesgo.esports || 'Informació...';
+                        document.getElementById('alcohol').textContent = data.data.factores_riesgo.alcohol || 'Informació...';
+                        document.getElementById('asma').textContent = data.data.factores_riesgo.asma || 'Informació...';
+                    }
+                    
+                    // Cargar datos clínicos
+                    if (data.data.datos_clinicos) {
+                        document.getElementById('mpid').textContent = data.data.datos_clinicos.mpid || 'Informació...';
+                        document.getElementById('malaltiesCroniques').textContent = data.data.datos_clinicos.malalties_croniques || 'Informació...';
+                        // ...cargar resto de datos clínicos...
+                    }
+                    
+                    // Cargar datos personales
+                    if (data.data.datos_personales) {
+                        document.getElementById('nom').textContent = data.data.datos_personales.nom || 'Informació...';
+                        document.getElementById('cognoms').textContent = data.data.datos_personales.cognoms || 'Informació...';
+                        // ...cargar resto de datos personales...
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            }
+        }
+
         function guardarCambios() {
-            // Usar ruta absoluta desde la raíz del proyecto
-            alert('Canvis guardats correctament');
-            window.location.href = '/main';
-            fetch('/api/guardar_perfil', {
+            const datos = {
+                factores_riesgo: {
+                    fumador: document.getElementById('fumador').textContent,
+                    esports: document.getElementById('esports').textContent,
+                    alcohol: document.getElementById('alcohol').textContent,
+                    asma: document.getElementById('asma').textContent
+                },
+                datos_clinicos: {
+                    mpid: document.getElementById('mpid').textContent,
+                    malalties_croniques: document.getElementById('malaltiesCroniques').textContent,
+                    operacions: document.getElementById('operacions').textContent,
+                    tractament_base: document.getElementById('tractamentBase').textContent,
+                    immunosupressions: document.getElementById('immunosupressions').textContent,
+                    comorbiditats: document.getElementById('comorbiditats').textContent,
+                    antecedents: document.getElementById('antecedents').textContent,
+                    medicacio: document.getElementById('medicacio').textContent
+                },
+                datos_personales: {
+                    nom: document.getElementById('nom').textContent,
+                    cognoms: document.getElementById('cognoms').textContent,
+                    edat: document.getElementById('edat').textContent,
+                    sexe: document.getElementById('sexe').textContent,
+                    targeta_sanitaria: document.getElementById('tarjetaSanitaria').textContent,
+                    direccio: document.getElementById('direccio').textContent,
+                    grup_sanguini: document.getElementById('grupSanguini').textContent,
+                    telefon: document.getElementById('telefon').textContent
+                }
+            };
+
+            fetch('/api/actualizar_perfil', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +302,13 @@
                 if(data.status === "success") {
                     alert('Canvis guardats correctament');
                     window.location.href = '/main';
+                } else {
+                    alert('Error al guardar els canvis: ' + data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar els canvis');
             });
         }
 
@@ -252,8 +317,9 @@
             window.location.href = '/main';
         }
 
-        // Función para procesar la sección que se va a editar
+        // Cargar datos al iniciar la página
         window.onload = function() {
+            cargarDatosPerfil();
             const urlParams = new URLSearchParams(window.location.search);
             const section = urlParams.get('section');
             if(section) {

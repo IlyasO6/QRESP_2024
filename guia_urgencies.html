@@ -3,88 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guia Urgències [MondongoTV]</title>
+    <title>Guia d'Urgències</title>
     <link rel="stylesheet" href="/static/css/style_main.css">
     <style>
-        .medical-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .medical-section {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .test-item {
-            border-left: 4px solid #3498db;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-        }
-
-        .test-date {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .test-result {
-            margin-top: 5px;
-            font-weight: bold;
-        }
-
-        .ai-section {
-            background: #f0f7ff;
-            border-left: 4px solid #2ecc71;
-        }
-
-        .ai-recommendation {
-            padding: 15px;
-            margin: 10px 0;
-            background: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .ai-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .ai-icon {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-
-        .urgency-level {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            margin-left: 10px;
-        }
-
-        .urgent {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .normal {
-            background: #74b9ff;
-            color: white;
-        }
-
-        .low {
-            background: #95a5a6;
-            color: white;
-        }
-
-        /* Estilos del menú desplegable */
         nav {
             width: 250px;
             background-color: #f4f4f4;
@@ -96,20 +17,24 @@
             padding-top: 20px;
             transition: left 0.3s ease-in-out;
         }
+
         nav.closed {
             left: -250px;
         }
+
         nav ul {
             list-style: none;
             margin: 0;
             padding: 0;
         }
+
         nav ul li {
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 1px solid #ddd;
             text-align: left;
         }
+
         nav ul li:hover {
             background-color: #eaeaea;
         }
@@ -129,7 +54,103 @@
         .content {
             margin-left: 250px;
             padding: 20px;
+            width: calc(100% - 250px);
+            display: flex;
+            gap: 20px;
+            position: relative;
+        }
+
+        .medical-container {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .medical-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .medical-section h2 {
+            margin-bottom: 10px;
+        }
+
+        .medical-section textarea {
             width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .recommendations-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .recommendations-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .recommendations-section h2 {
+            margin-bottom: 10px;
+        }
+
+        .recommendations-section textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .overlay-content input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .overlay-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         @media (max-width: 768px) {
@@ -137,13 +158,19 @@
                 width: 80%;
                 left: -80%;
             }
+            .container {
+                width: 90%;
+                margin: 20px auto;
+            }
             .content {
                 margin-left: 0;
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Menú de navegación -->
     <nav id="nav">
         <div class="toggle-menu" onclick="toggleMenu()">&#8594;</div>
         <ul>
@@ -157,43 +184,30 @@
     </nav>
 
     <div class="content">
-        <div class="container">
-            <h1>Guia d'Urgències</h1>
-            
-            <div class="medical-container">
-                <!-- Sección de Pruebas Médicas -->
-                <div class="medical-section">
-                    <h2>Proves Mèdiques Recents</h2>
-                    <div class="test-list">
-                        <!-- Les proves s'afegiran dinàmicament -->
-                    </div>
-                </div>
+        <div class="medical-container">
+            <div class="medical-section">
+                <h2>Simptomes</h2>
+                <textarea id="simptomes" placeholder="Escriu els simptomes aquí..."></textarea>
+            </div>
 
-                <!-- Sección de Recomendaciones -->
-                <div class="medical-section ai-section">
-                    <div class="ai-header">
-                        <h2>Recomanacions</h2>
-                    </div>
-                    <p>Basat en les teves dades i símptomes recents:</p>
-                    
-                    <div class="ai-recommendation">
-                        <h3>Proves Recomanades</h3>
-                        <ul id="recommended-tests">
-                            <!-- Les proves recomanades s'afegiran dinàmicament -->
-                        </ul>
-                    </div>
+            <div class="medical-section">
+                <h2>Pruebas Realizadas</h2>
+                <textarea id="pruebasRealizadas" placeholder="Escriu les proves realitzades aquí..."></textarea>
+            </div>
+        </div>
 
-                    <div class="ai-recommendation">
-                        <h3>Tractament Suggerit</h3>
-                        <ul id="recommended-treatment">
-                            <!-- Els tractaments s'afegiran dinàmicament -->
-                        </ul>
-                    </div>
+        <div class="recommendations-container">
+            <div class="recommendations-section">
+                <h2>Recomanacions</h2>
+                <textarea id="aiRecommendations" placeholder="Les recomanacions de la IA apareixeran aquí..." readonly></textarea>
+            </div>
+        </div>
 
-                    <div id="ai-dynamic-recommendations">
-                        <!-- Aquí s'insertaran dinàmicament les recomanacions -->
-                    </div>
-                </div>
+        <div class="overlay" id="overlay">
+            <div class="overlay-content">
+                <h2>Introduzca la clave de médico</h2>
+                <input type="password" id="claveMedico" placeholder="Clave de médico">
+                <button onclick="verificarClave()">Acceder</button>
             </div>
         </div>
     </div>
@@ -206,11 +220,19 @@
             document.querySelector('.toggle-menu').innerHTML = toggleIcon;
         }
 
+        function verificarClave() {
+            const clave = document.getElementById('claveMedico').value;
+            if (clave === 'clave_correcta') {
+                document.getElementById('overlay').style.display = 'none';
+            } else {
+                alert('Clave incorrecta. Inténtelo de nuevo.');
+            }
+        }
+
         // Funció per actualitzar les recomanacions de la IA
         function updateAIRecommendations(recommendations) {
-            const aiContainer = document.getElementById('ai-dynamic-recommendations');
-            // Aquí anirà la lògica per actualitzar les recomanacions
-            // basades en l'anàlisi de la IA
+            const aiContainer = document.getElementById('aiRecommendations');
+            aiContainer.value = recommendations;
         }
     </script>
 </body>

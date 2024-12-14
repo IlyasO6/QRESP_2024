@@ -224,7 +224,7 @@
                 <h2>Historial de Símptomes</h2>
                 <div class="date-select">
                     <label for="historyDate">Veure registre del dia:</label>
-                    <input type="date" id="historyDate" onchange="loadSymptoms()">
+                    <input type="date" id="historyDate" onchange="loadSymptoms(this.value)">
                 </div>
                 <div id="symptomsRecord" class="info-box">
                     Selecciona una data per veure el registre
@@ -245,7 +245,11 @@
         document.getElementById('symptomForm').onsubmit = function(e) {
             e.preventDefault();
             const datos = {
-                // ... recoger datos del formulario
+                estado_general: document.getElementById('generalState').value,
+                sintomas_especificos: document.getElementById('symptoms').value,
+                temperatura: document.getElementById('fever').value,
+                nivel_dolor: document.getElementById('pain').value,
+                notas: document.getElementById('notes').value
             };
             
             fetch('/api/guardar_sintomas', {
@@ -259,14 +263,67 @@
             .then(data => {
                 if(data.status === "success") {
                     alert('Registre guardat correctament');
-                    window.location.href = '/com_em_trobo';
+                    loadSymptoms(document.getElementById('historyDate').value);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar el registre');
             });
         };
 
-        function loadSymptoms() {
-            // Aquí iría la lógica para cargar los síntomas de una fecha específica
+        function loadSymptoms(fecha) {
+            if (!fecha) return;
+            
+            fetch(`/api/historial_sintomas/${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                const symptomsRecord = document.getElementById('symptomsRecord');
+                if (data.status === "success") {
+                    symptomsRecord.innerHTML = `
+                        <div class="symptom-record">
+                            <h3>Registre del dia ${data.data.fecha_registro}</h3>
+                            <p><strong>Estat general:</strong> ${data.data.estado_general}</p>
+                            <p><strong>Temperatura:</strong> ${data.data.temperatura}°C</p>
+                            <p><strong>Nivell de dolor:</strong> ${data.data.nivel_dolor}/10</p>
+                            <p><strong>Símptomes específics:</strong></p>
+                            <div class="symptom-details">${data.data.sintomas_especificos}</div>
+                            <p><strong>Notes:</strong></p>
+                            <div class="symptom-notes">${data.data.notas}</div>
+                        </div>
+                    `;
+                } else {
+                    symptomsRecord.innerHTML = `<p>No hi ha registres per aquesta data</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('symptomsRecord').innerHTML = 
+                    '<p>Error al carregar els símptomes</p>';
+            });
         }
+
+        // Añadir estilos para el historial
+        const style = document.createElement('style');
+        style.textContent = `
+            .symptom-record {
+                padding: 15px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .symptom-record h3 {
+                color: #2c3e50;
+                margin-bottom: 15px;
+            }
+            .symptom-details, .symptom-notes {
+                background: #f8f9fa;
+                padding: 10px;
+                border-radius: 4px;
+                margin: 5px 0 15px 0;
+            }
+        `;
+        document.head.appendChild(style);
 
         // Establecer la fecha actual y desactivar la edición
         const today = new Date();
