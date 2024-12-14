@@ -1,3 +1,4 @@
+import json
 from pymongo import MongoClient
 
 class db_retriever:
@@ -6,7 +7,6 @@ class db_retriever:
         self.db = None
         self.db_name = "dbqr"
         self.users_collection = "dbqrcol"
-        self.knowledge_collection = "pre_data"
         self.doctor_keys = "medkeys"
     
     def connect(self, db_name = "dbqr"):
@@ -21,9 +21,15 @@ class db_retriever:
         collection = self.get_collection(self.users_collection)
         return collection.find_one({f"{key}": f"{value}"})
     
-    def get_knowledge(self):
-        collection = self.get_collection(self.knowledge_collection)
-        return collection.find()
+    def get_med_data(self):
+        """Reads and returns all medical data from med_data.json file."""
+        try:
+            with open('med_data.json', 'r', encoding='utf-8') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            raise FileNotFoundError("med_data.json file not found")
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON format in med_data.json")
 
     def doctor_keys(self, key):
         collection = self.get_collection(self.doctor_keys)
@@ -35,12 +41,13 @@ class db_retriever:
 
 
 """
-EJEMPLO DE USO
 db = db_retriever("mongodb+srv://Ilyas:NlzFSgDrycE0gRGt@cluster0.9t4o9.mongodb.net/")
 db.connect()
-user1 = db.get_user("username", "Andres")
 
-print(user1['medical_info']['age'])
+data = db.get_med_data()
+for key, value in data.items():
+    print(key + ":", value)
+    print()
 
 db.close_connection()
 """
