@@ -1,8 +1,9 @@
 import requests
 import json
+import logging
 
 # Reemplazar con tu clave API de Straico
-api_key = "tu_api_key_de_straico"
+api_key = "Ei-4Kp6dXXRrHqBz7G1ZDJtNMbc5Aj88xgiJgrezvYmlRQhruEj"
 
 # Función para generar el prompt para Straico
 def generar_prompt_urgencias(historial_clinico, pruebas_complementarias="No hechas aún", sintomas="Sin especificar"):
@@ -19,21 +20,28 @@ def generar_prompt_urgencias(historial_clinico, pruebas_complementarias="No hech
 
 # Función para obtener la respuesta de la API de Straico
 def obtener_respuesta_straico(prompt):
-    url = 'https://api.straico.com/v1/completion'  # Endpoint de ejemplo
+    url = 'https://api.straico.com/v0/prompt/completion'  # Endpoint
     headers = {
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json',
     }
-    data = {
-        "model": "text-davinci-003",  # Reemplaza con el modelo adecuado según la API de Straico
+    body = {
+        "model": "anthropic/claude-3.5-sonnet",  # Reemplaza con el modelo adecuado según la API de Straico
         "prompt": prompt,
-        "max_tokens": 300,
     }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        return response.json()['choices'][0]['text']
-    else:
-        print(f"Error: {response.status_code}")
+    
+    try:
+        response = requests.post(url, headers=headers, json=body)
+        if response.status_code == 201:
+                data = response.json()
+                suggestion = data['data']['completion']['choices'][0]['message']['content']
+                return suggestion.strip()
+        else:
+            logging.error(f"Error: Received status code {response.status_code} with message {response.text}")
+            return None
+
+    except Exception as e:
+        logging.error(f"Error getting diagnosis suggestion: {e}")
         return None
 
 # Función para clasificar el escenario clínico según la respuesta
