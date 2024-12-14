@@ -6,10 +6,12 @@ from decision_sintomas import analizar_sintomas
 from decision_urgencias import gestionar_urgencias
 from get_data import db_retriever
 
-db_retrieve = db_retriever(connection= "mongodb+srv://Ilyas:NlzFSgDrycE0gRGt@cluster0.9t4o9.mongodb.net/")
+connection_url = ""
+
+db_retrieve = db_retriever(connection= connection_url)
 db_retrieve.connect()
 
-def tomar_decision_medica(datos_medicos, sintomas, en_urgencias, pruebas_complementarias = "No hechas aún"):
+def tomar_decision_medica(card_number, sintomas, en_urgencias, pruebas_complementarias = "No hechas aún"):
     """
     Toma decisiones médicas basándose en si el paciente está en urgencias o no.
     
@@ -21,6 +23,9 @@ def tomar_decision_medica(datos_medicos, sintomas, en_urgencias, pruebas_complem
     Returns:
         Dict con los resultados de la decisión
     """
+    datos_medicos = db_retrieve.get_user("health_card_number", card_number)['medical_info']
+
+
     try:
         if en_urgencias:
             resultado = gestionar_urgencias(
@@ -52,27 +57,20 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     sintomas_paciente = ["fiebre", "tos seca", "dificultad para respirar"]
-    historial_clinico = {
-        "tipo_MPID": "UIP", 
-        "cronicidad": "alta", 
-        "tratamiento_base": "corticosteroides",
-        "estado_inmunitario": "bajo",  # Inmunosuprimido
-        "comorbilidades": ["hipertensión"]
-    }
     pruebas_complementarias = {
         "gasometria": "PaO2/FiO2 280", 
         "rx_torax": "infiltrados bilaterales"
     }
     
     # Ejemplo de uso para caso normal
-    resultado_normal = tomar_decision_medica(datos_medicos= historial_clinico, 
+    resultado_normal = tomar_decision_medica(card_number= "11", 
                                              sintomas=sintomas_paciente, 
                                              en_urgencias=False
                                              )
     print("Resultado caso normal:", resultado_normal)
     
     # Ejemplo de uso para caso de urgencias
-    resultado_urgencia = tomar_decision_medica(datos_medicos= historial_clinico, 
+    resultado_urgencia = tomar_decision_medica(card_number= "12", 
                                                sintomas=sintomas_paciente, 
                                                en_urgencias=True, 
                                                pruebas_complementarias= pruebas_complementarias
