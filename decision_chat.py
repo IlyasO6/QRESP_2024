@@ -1,20 +1,11 @@
-import openai
+import requests
+import json
 
-# Configurar la API de OpenAI
-openai.api_key = 'tu-api-key-aqui'
+# Reemplazar con tu clave API de Straico
+api_key = "tu_api_key_de_straico"
 
-# Función para generar el prompt de la API de OpenAI para el escenario inicial de urgencias
-def generar_prompt_urgencias(historial_clinico, pruebas_complementarias, sintomas):
-    """
-    Genera un prompt estructurado para la API de OpenAI basado en los datos del paciente
-    y la valoración de urgencia.
-    
-    historial_clinico: diccionario con los datos clínicos del paciente.
-    pruebas_complementarias: diccionario con los resultados de las pruebas.
-    sintomas: lista de síntomas reportados por el paciente.
-    
-    Retorna la respuesta generada por la API (diagnóstico y tratamiento recomendado).
-    """
+# Función para generar el prompt para Straico
+def generar_prompt_urgencias(historial_clinico, pruebas_complementarias="No hechas aún", sintomas="Sin especificar"):
     prompt = f"""
     Paciente con MPID. Historia clínica: {historial_clinico}.
     Resultados de pruebas complementarias: {pruebas_complementarias}.
@@ -24,25 +15,29 @@ def generar_prompt_urgencias(historial_clinico, pruebas_complementarias, sintoma
     b) Diagnóstico concreto de neumonía (distinción entre inmunosuprimidos e inmunocompetentes).
     c) No diagnóstico concreto (descartar TEP y realizar pruebas adicionales).
     """
+    return prompt
 
-    # Llamada a la API de OpenAI
-    response = openai.Completion.create(
-        model="gpt-4",
-        prompt=prompt,
-        max_tokens=300
-    )
-    
-    return response.choices[0].text.strip()
+# Función para obtener la respuesta de la API de Straico
+def obtener_respuesta_straico(prompt):
+    url = 'https://api.straico.com/v1/completion'  # Endpoint de ejemplo
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json',
+    }
+    data = {
+        "model": "text-davinci-003",  # Reemplaza con el modelo adecuado según la API de Straico
+        "prompt": prompt,
+        "max_tokens": 300,
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        return response.json()['choices'][0]['text']
+    else:
+        print(f"Error: {response.status_code}")
+        return None
 
-# Función para clasificar el escenario clínico según la respuesta de la API
+# Función para clasificar el escenario clínico según la respuesta
 def clasificar_escenario_clinico(respuesta_api):
-    """
-    Clasifica el escenario clínico según la respuesta de la API.
-    
-    respuesta_api: texto generado por la API que contiene el diagnóstico y tratamiento.
-    
-    Retorna el diagnóstico y las recomendaciones.
-    """
     if "neumonía" in respuesta_api:
         if "inmunosuprimido" in respuesta_api:
             return "Neumonía en inmunosuprimido", respuesta_api
@@ -55,24 +50,16 @@ def clasificar_escenario_clinico(respuesta_api):
     else:
         return "Resultado indeterminado", respuesta_api
 
-# Función principal para gestionar los síntomas y la valoración
-def gestionar_urgencias(sintomas, historial_clinico, pruebas_complementarias):
-    """
-    Gestiona la urgencia del paciente, genera el prompt, clasifica el escenario y devuelve
-    el diagnóstico y tratamiento recomendado.
-    
-    sintomas: lista de síntomas reportados por el paciente.
-    historial_clinico: diccionario con los datos clínicos del paciente.
-    pruebas_complementarias: diccionario con los resultados de las pruebas realizadas.
-    
-    Retorna el diagnóstico final y las recomendaciones.
-    """
-    respuesta_api = generar_prompt_urgencias(historial_clinico, pruebas_complementarias, sintomas)
-    clasificacion, recomendaciones = clasificar_escenario_clinico(respuesta_api)
-    
-    return clasificacion, recomendaciones
+# Función principal
+def gestionar_urgencias(historial_clinico, sintomas="Sin especificar", pruebas_complementarias="No hechas aún"):
+    prompt = generar_prompt_urgencias(historial_clinico, pruebas_complementarias, sintomas)
+    respuesta_api = obtener_respuesta_straico(prompt)
+    if respuesta_api:
+        clasificacion, recomendaciones = clasificar_escenario_clinico(respuesta_api)
+        return clasificacion, recomendaciones
+    return "Error al obtener respuesta", ""
 
-# Ejemplo de uso:
+# Ejemplo de uso
 sintomas_paciente = ["fiebre", "tos seca", "dificultad para respirar"]
 historial_clinico = {
     "tipo_MPID": "UIP", 
@@ -87,6 +74,6 @@ pruebas_complementarias = {
 }
 
 # Ejecutar el sistema de urgencias
-clasificacion, recomendaciones = gestionar_urgencias(sintomas_paciente, historial_clinico, pruebas_complementarias)
+clasificacion, recomendaciones = gestionar_urgencias(historial_clinico, sintomas_paciente, pruebas_complementarias)
 print(f"Clasificación: {clasificacion}")
 print(f"Recomendaciones: {recomendaciones}")
