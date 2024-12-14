@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil [MondongoTV]</title>
+    <link rel="stylesheet" href="/static/css/style_main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        nav {
+            width: 250px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 20px;
+            transition: left 0.3s ease-in-out;
+        }
+        nav.closed {
+            left: -250px;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        nav ul li:hover {
+            background-color: #eaeaea;
+        }
+
+        .toggle-menu {
+            position: absolute;
+            top: 20px;
+            left: 100%;
+            width: 30px;
+            height: 30px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .info-container {
+            display: flex;
+            justify-content: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-left: 0;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .info-column {
+            width: calc(33.33% - 40px);
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .info-box.editable {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        #edat, #grupSanguini {
+            width: 50px;
+        }
+
+        /* Estilos adicionales para los botones de guardar y cancelar */
+        .action-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .save-button {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .cancel-button {
+            background-color: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav">
+        <div class="toggle-menu" onclick="toggleMenu()">&#8594;</div>
+        <ul>
+            <li onclick="window.location.href='main.html'">Perfil</li>
+            <li onclick="window.location.href='com_em_trobo.html'">Com em trobo</li>
+            <li onclick="window.location.href='guia_urgencies.html'">Guia urgències</li>
+            <li onclick="window.location.href='historial_proves.html'">Historial de proves</li>
+            <li onclick="window.location.href='centres_medics.html'">Centres mèdics propers</li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div class="container">
+            <h1>Editar Perfil</h1>
+            <p>Aquí pots editar la teva informació personal. Les dades mèdiques només poden ser modificades pel personal mèdic.</p>
+
+            <div class="info-container">
+                <!-- Dades Mèdiques (No editable) -->
+                <div class="info-column">
+                    <h2>Dades Mèdiques</h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Sexe Biològic:</strong></p>
+                    <div class="info-box" id="sexeBiologic">Informació...</div>
+
+                    <p><strong>Grup Sanguini:</strong></p>
+                    <div class="info-box" id="grupSanguini">Informació...</div>
+                </div>
+
+                <!-- Dades Personals (Editable) -->
+                <div class="info-column">
+                    <h2>Dades Personals</h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Nom i Cognoms:</strong></p>
+                    <div class="info-box editable" id="nomCognoms" contenteditable="true">Informació...</div>
+
+                    <p><strong>Edat:</strong></p>
+                    <div class="info-box editable" id="edat" contenteditable="true">Informació...</div>
+
+                    <p><strong>Nº de Targeta Sanitària:</strong></p>
+                    <div class="info-box editable" id="tarjetaSanitaria" contenteditable="true">Informació...</div>
+                </div>
+
+                <!-- Contacte Directe (Editable) -->
+                <div class="info-column">
+                    <h2>Contacte Directe</h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Direcció:</strong></p>
+                    <div class="info-box editable" id="direccio" contenteditable="true">Informació...</div>
+
+                    <p><strong>Telèfon:</strong></p>
+                    <div class="info-box editable" id="telefon" contenteditable="true">Informació...</div>
+                </div>
+            </div>
+
+            <!-- Botones de guardar y cancelar -->
+            <div class="action-buttons">
+                <button class="save-button" onclick="guardarCambios()">Guardar Canvis</button>
+                <button class="cancel-button" onclick="window.location.href='main.html'">Cancel·lar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var nav = document.getElementById('nav');
+            nav.classList.toggle('closed');
+            var toggleIcon = nav.classList.contains('closed') ? '&#8594;' : '&#8592;';
+            document.querySelector('.toggle-menu').innerHTML = toggleIcon;
+        }
+
+        function guardarCambios() {
+            // Usar ruta absoluta desde la raíz del proyecto
+            alert('Canvis guardats correctament');
+            window.location.href = '/templates/main.html';
+        }
+
+        // También actualizar la navegación del botón cancelar
+        document.querySelector('.cancel-button').onclick = function() {
+            window.location.href = '/templates/main.html';
+        }
+
+        // Función para procesar la sección que se va a editar
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section');
+            if(section) {
+                // Aquí puedes añadir lógica específica según la sección
+                console.log('Editando sección:', section);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Urgències [MondongoTV]</title>
+    <link rel="stylesheet" href="/static/css/style_main.css">
+    <style>
+        .medical-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .medical-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-item {
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+
+        .test-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .test-result {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .ai-section {
+            background: #f0f7ff;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .ai-recommendation {
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .ai-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .urgency-level {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .urgent {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .normal {
+            background: #74b9ff;
+            color: white;
+        }
+
+        .low {
+            background: #95a5a6;
+            color: white;
+        }
+
+        /* Estilos del menú desplegable */
+        nav {
+            width: 250px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 20px;
+            transition: left 0.3s ease-in-out;
+        }
+        nav.closed {
+            left: -250px;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        nav ul li:hover {
+            background-color: #eaeaea;
+        }
+
+        .toggle-menu {
+            position: absolute;
+            top: 20px;
+            left: 100%;
+            width: 30px;
+            height: 30px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                width: 80%;
+                left: -80%;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav">
+        <div class="toggle-menu" onclick="toggleMenu()">&#8594;</div>
+        <ul>
+            <li onclick="window.location.href='/templates/main.html'">Perfil</li>
+            <li onclick="window.location.href='/templates/com_em_trobo.html'">Com em trobo</li>
+            <li onclick="window.location.href='/templates/guia_urgencies.html'">Guia urgències</li>
+            <li onclick="window.location.href='/templates/historial_proves.html'">Historial de proves</li>
+            <li onclick="window.location.href='/templates/centres_medics.html'">Centres mèdics propers</li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div class="container">
+            <h1>Guia d'Urgències</h1>
+            
+            <div class="medical-container">
+                <!-- Sección de Pruebas Médicas -->
+                <div class="medical-section">
+                    <h2>Proves Mèdiques Recents</h2>
+                    <div class="test-list">
+                        <!-- Les proves s'afegiran dinàmicament -->
+                    </div>
+                </div>
+
+                <!-- Sección de Recomendaciones -->
+                <div class="medical-section ai-section">
+                    <div class="ai-header">
+                        <h2>Recomanacions</h2>
+                    </div>
+                    <p>Basat en les teves dades i símptomes recents:</p>
+                    
+                    <div class="ai-recommendation">
+                        <h3>Proves Recomanades</h3>
+                        <ul id="recommended-tests">
+                            <!-- Les proves recomanades s'afegiran dinàmicament -->
+                        </ul>
+                    </div>
+
+                    <div class="ai-recommendation">
+                        <h3>Tractament Suggerit</h3>
+                        <ul id="recommended-treatment">
+                            <!-- Els tractaments s'afegiran dinàmicament -->
+                        </ul>
+                    </div>
+
+                    <div id="ai-dynamic-recommendations">
+                        <!-- Aquí s'insertaran dinàmicament les recomanacions -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var nav = document.getElementById('nav');
+            nav.classList.toggle('closed');
+            var toggleIcon = nav.classList.contains('closed') ? '&#8594;' : '&#8592;';
+            document.querySelector('.toggle-menu').innerHTML = toggleIcon;
+        }
+
+        // Funció per actualitzar les recomanacions de la IA
+        function updateAIRecommendations(recommendations) {
+            const aiContainer = document.getElementById('ai-dynamic-recommendations');
+            // Aquí anirà la lògica per actualitzar les recomanacions
+            // basades en l'anàlisi de la IA
+        }
+    </script>
+</body>
+</html>

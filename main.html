@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido [MondongoTV]</title>
+    <link rel="stylesheet" href="/static/css/style_main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        nav {
+            width: 250px; /* Menú estrecho */
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 20px;
+            transition: left 0.3s ease-in-out;
+        }
+        nav.closed {
+            left: -250px; /* Menú plegado */
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        nav ul li:hover {
+            background-color: #eaeaea;
+        }
+
+        .toggle-menu {
+            position: absolute;
+            top: 20px;
+            left: 100%;
+            width: 30px;
+            height: 30px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-left: 250px; /* Alineación del contenido con el menú */
+            padding: 20px;
+            width: 100%;
+        }
+
+        .info-container {
+            display: flex;
+            justify-content: flex-start; /* Cambiar a flex-start para desplazar a la izquierda */
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-left: 0; /* Eliminar margen izquierdo */
+            padding-left: 20px; /* Añadir padding izquierdo para alinear con el subtítulo */
+            padding-right: 20px; /* Añadir padding derecho para evitar que el texto esté muy pegado a la derecha */
+        }
+
+        .info-column {
+            width: calc(33.33% - 40px); /* Ajustar el ancho de las columnas para que no se solapen con el menú */
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .info-box.editable {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        #edat, #grupSanguini {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav">
+        <div class="toggle-menu" onclick="toggleMenu()">&#8594;</div> <!-- Pestaña para desplegar y plegar el menú -->
+        <ul>
+            <li onclick="window.location.href='main.html'">Perfil</li>
+            <li onclick="window.location.href='com_em_trobo.html'">Com em trobo</li>
+            <li onclick="window.location.href='guia_urgencies.html'">Guia urgències</li>
+            <li onclick="window.location.href='historial_proves.html'">Historial de proves</li>
+            <li onclick="window.location.href='centres_medics.html'">Centres mèdics propers</li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div class="container">
+            <h1>Perfil</h1>
+            <p>Benvingut a la pàgina del perfil. Aquí pots veure i editar la teva informació personal.</p>
+
+            <div class="info-container">
+                <div class="info-column">
+                    <h2>
+                        Dades Mèdiques
+                    </h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Sexe:</strong></p>
+                    <div class="info-box" id="sexeBiologic">Informació...</div>
+
+                    <p><strong>Grup Sanguini:</strong></p>
+                    <div class="info-box" id="grupSanguini">Informació...</div>
+                </div>
+
+                <div class="info-column">
+                    <h2>
+                        Dades Personals
+                        <button class="edit-button" onclick="toggleEdit('personal')"></button>
+                    </h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Nom i Cognoms:</strong></p>
+                    <div class="info-box" id="nomCognoms">Informació...</div>
+
+                    <p><strong>Edat:</strong></p>
+                    <div class="info-box" id="edat">Informació...</div>
+
+                    <p><strong>Nº de Targeta Sanitària:</strong></p>
+                    <div class="info-box" id="tarjetaSanitaria">Informació...</div>
+                </div>
+
+                <div class="info-column">
+                    <h2>
+                        Contacte Directe
+                        <button class="edit-button" onclick="toggleEdit('contact')"></button>
+                    </h2>
+                    <div class="section-divider"></div>
+                    <p><strong>Direcció:</strong></p>
+                    <div class="info-box" id="direccio">Informació...</div>
+
+                    <p><strong>Telèfon:</strong></p>
+                    <div class="info-box" id="telefon">Informació...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var nav = document.getElementById('nav');
+            nav.classList.toggle('closed');
+            var toggleIcon = nav.classList.contains('closed') ? '&#8594;' : '&#8592;';
+            document.querySelector('.toggle-menu').innerHTML = toggleIcon;
+        }
+        
+        function toggleEdit(section) {
+            // Usar ruta absoluta desde la raíz del proyecto
+            window.location.href = '/templates/editar_perfil.html?section=' + section;
+        }
+    </script>
+</body>
+</html>
