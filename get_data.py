@@ -2,8 +2,9 @@ import json
 from pymongo import MongoClient
 
 class db_retriever:
-    def __init__(self, connection):
-        self.client = MongoClient(connection)
+    def __init__(self, connection = None):
+        if connection != None:
+            self.client = MongoClient(connection)
         self.db = None
         self.db_name = "dbqr"
         self.users_collection = "dbqrcol"
@@ -18,8 +19,11 @@ class db_retriever:
         return self.db[collection_name]
 
     def get_user(self, key, value):
-        collection = self.get_collection(self.users_collection)
-        return collection.find_one({f"{key}": f"{value}"})
+        try:
+            collection = self.get_collection(self.users_collection)
+            return collection.find_one({key: value})
+        except Exception as e:
+            raise ValueError(f"Error getting user data: {e}")
     
     def get_med_data(self):
         """Reads and returns all medical data from med_data.json file."""
@@ -39,15 +43,12 @@ class db_retriever:
         """Closes the connection to the MongoDB server."""
         self.client.close()
 
+#  prueba de uso
+if __name__ == "__main__":
+    db = db_retriever("mongodb+srv://Ilyas:NlzFSgDrycE0gRGt@cluster0.9t4o9.mongodb.net/")
+    db.connect()
 
-"""
-db = db_retriever("mongodb+srv://Ilyas:NlzFSgDrycE0gRGt@cluster0.9t4o9.mongodb.net/")
-db.connect()
+    data = db.get_user("health_card_number", "11")
+    print(data)
 
-data = db.get_med_data()
-for key, value in data.items():
-    print(key + ":", value)
-    print()
-
-db.close_connection()
-"""
+    db.close_connection()
