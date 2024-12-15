@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class ImprovementAnalyzer:
     def __init__(self):
-        self.api_key = "t8-Mzz5B4NpqZ3EfkywLN1rPZUbEcs9KJfacVOwylSZ9XngsUQF"
+        self.api_key = "aF-Dco7h7mtMM8UuayArHrWHJkxQAUF2ptFHuLBpzpiGfRgPemK"
         self.api_base_url = "https://api.straico.com/v0"
         self.categories = {
             "1": "treatments",
