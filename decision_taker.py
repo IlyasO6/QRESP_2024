@@ -1,81 +1,85 @@
-import requests
-import json
 import logging
-import pymongo
+from get_data import db_retriever
 from decision_sintomas import analizar_sintomas
 from decision_urgencias import gestionar_urgencias
-from get_data import db_retriever
 
-connection_url = ""
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-db_retrieve = db_retriever(connection= connection_url)
-db_retrieve.connect()
+# Single database connection
+connection_url = "mongodb+srv://Ilyas:NlzFSgDrycE0gRGt@cluster0.9t4o9.mongodb.net/"
+db_retrieve = None
 
-def tomar_decision_medica(card_number, sintomas, en_urgencias, pruebas_complementarias = "No hechas aún"):
+def initialize_db():
+    global db_retrieve
+    try:
+        db_retrieve = db_retriever(connection=connection_url)
+        db_retrieve.connect()
+        return True
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        return False
+
+def tomar_decision_medica(card_number, sintomas, en_urgencias, pruebas_complementarias="No hechas aún"):
     """
     Toma decisiones médicas basándose en si el paciente está en urgencias o no.
-    
-    Args:
-        datos_medicos: Diccionario con la información médica del paciente
-        sintomas: Lista de síntomas actuales
-        en_urgencias: Boolean que indica si es caso de urgencias
-    
-    Returns:
-        Dict con los resultados de la decisión
     """
-    datos_medicos = db_retrieve.get_user("health_card_number", card_number)['medical_info']
-
+    if not db_retrieve:
+        if not initialize_db():
+            return {"error": "Database connection failed"}
 
     try:
+        # Get user medical data
+        user_data = db_retrieve.get_user("health_card_number", card_number)
+        if not user_data:
+            raise ValueError(f"No medical data found for card number {card_number}")
+
+        historial_clinico = user_data.get('medical_info', {})
+        
         if en_urgencias:
-            resultado = gestionar_urgencias(
-                historial_clinico=datos_medicos,
+            clasificacion, recomendaciones = gestionar_urgencias(
+                historial_clinico=historial_clinico,
                 sintomas=sintomas,
                 pruebas_complementarias=pruebas_complementarias
             )
-            logging.info("Procesando caso de urgencias")
+            return {
+                "estado": "urgencias",
+                "clasificacion": clasificacion,
+                "recomendaciones": recomendaciones
+            }
         else:
-            resultado = analizar_sintomas(
+            evaluacion = analizar_sintomas(
                 sintomas=sintomas,
-                historial_clinico=datos_medicos,
+                historial_clinico=historial_clinico
             )
-            logging.info("Procesando caso regular de síntomas")
-            
-        return resultado
-        
+            return {
+                "estado": "sintomas",
+                "evaluacion": evaluacion
+            }
+
     except Exception as e:
-        logging.error(f"Error en la toma de decisión: {str(e)}")
+        logger.error(f"Error in tomar_decision_medica: {e}")
         return {
-            "estado": "error",
-            "mensaje": str(e),
-            "tipo_gestion": "urgencias" if en_urgencias else "sintomas"
+            "error": str(e),
+            "estado": "error"
         }
 
-# Ejemplo de uso
+#  prueba de uso:
 if __name__ == "__main__":
-    # Configuración básica de logging
-    logging.basicConfig(level=logging.INFO)
-    
-    sintomas_paciente = ["fiebre", "tos seca", "dificultad para respirar"]
-    pruebas_complementarias = {
-        "gasometria": "PaO2/FiO2 280", 
-        "rx_torax": "infiltrados bilaterales"
-    }
-    
-    # Ejemplo de uso para caso normal
-    resultado_normal = tomar_decision_medica(card_number= "11", 
-                                             sintomas=sintomas_paciente, 
-                                             en_urgencias=False
-                                             )
-    print("Resultado caso normal:", resultado_normal)
-    
-    # Ejemplo de uso para caso de urgencias
-    resultado_urgencia = tomar_decision_medica(card_number= "12", 
-                                               sintomas=sintomas_paciente, 
-                                               en_urgencias=True, 
-                                               pruebas_complementarias= pruebas_complementarias
-                                               )
-    print("Resultado caso urgencia:", resultado_urgencia)
-
-
-db_retrieve.close_connection()
+    try:
+        # Test data
+        test_card = "11"
+        test_sintomas = ["fiebre", "tos"]
+        
+        # Test normal symptoms flow
+        result = tomar_decision_medica(test_card, test_sintomas, en_urgencias=False)
+        print("Normal symptoms result:", result)
+        
+        # Test emergency flow
+        result = tomar_decision_medica(test_card, test_sintomas, en_urgencias=True)
+        print("Emergency result:", result)
+        
+    finally:
+        if db_retrieve:
+            db_retrieve.close_connection()
