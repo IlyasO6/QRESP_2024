@@ -1,21 +1,28 @@
 import requests
 import json
 import logging
-
+from get_data import db_retriever
 # API configuration
-api_key = "t8-Mzz5B4NpqZ3EfkywLN1rPZUbEcs9KJfacVOwylSZ9XngsUQF"
+api_key = "aF-Dco7h7mtMM8UuayArHrWHJkxQAUF2ptFHuLBpzpiGfRgPemK"
 api_base_url = "https://api.straico.com/v0"
+
+db_retrieve = db_retriever()
+
+med_data = db_retrieve.get_med_data()
 
 # Función para generar el prompt para Straico
 def generar_prompt_urgencias(historial_clinico, pruebas_complementarias="No hechas aún", sintomas="Sin especificar"):
     prompt = f"""
     Paciente con MPID. Historia clínica: {historial_clinico}.
     Resultados de pruebas complementarias: {pruebas_complementarias}.
-    Sintomas reportados: {sintomas}.
+    Sintomas reportados: {sintomas}
     Realiza una valoración inicial y clasifica al paciente en uno de los siguientes escenarios clínicos:
     a) Diagnóstico concreto ≠ neumonía (devuelve tratamiento específico).
     b) Diagnóstico concreto de neumonía (distinción entre inmunosuprimidos e inmunocompetentes).
     c) No diagnóstico concreto (descartar TEP y realizar pruebas adicionales).
+
+    Ten en cuenta la siguiente informacion. causas de agudizacion: {med_data['causas_agudizacion']}, abreviaciones: {med_data['abreviaciones']}, 
+    signos de alarma: {med_data['signos_alarma']}, cosas a evitar: {med_data['cosas_evitar']}, tipos de MPID: {med_data['tipos_mpid']}.
     """
     return prompt
 
@@ -73,21 +80,22 @@ def gestionar_urgencias(historial_clinico, sintomas="Sin especificar", pruebas_c
         return clasificacion, recomendaciones
     return "Error al obtener respuesta", ""
 
-# Ejemplo de uso
-sintomas_paciente = ["fiebre", "tos seca", "dificultad para respirar"]
-historial_clinico = {
-    "tipo_MPID": "UIP", 
-    "cronicidad": "alta", 
-    "tratamiento_base": "corticosteroides",
-    "estado_inmunitario": "bajo",  # Inmunosuprimido
-    "comorbilidades": ["hipertensión"]
-}
-pruebas_complementarias = {
-    "gasometria": "PaO2/FiO2 280", 
-    "rx_torax": "infiltrados bilaterales"
-}
+if __name__ == '__main__':
+    # Ejemplo de uso
+    sintomas_paciente = ["fiebre", "tos seca", "dificultad para respirar"]
+    historial_clinico = {
+        "tipo_MPID": "UIP", 
+        "cronicidad": "alta", 
+        "tratamiento_base": "corticosteroides",
+        "estado_inmunitario": "bajo",  # Inmunosuprimido
+        "comorbilidades": ["hipertensión"]
+    }
+    pruebas_complementarias = {
+        "gasometria": "PaO2/FiO2 280", 
+        "rx_torax": "infiltrados bilaterales"
+    }
 
-# Ejecutar el sistema de urgencias
-clasificacion, recomendaciones = gestionar_urgencias(historial_clinico, sintomas_paciente, pruebas_complementarias)
-print(f"Clasificación: {clasificacion}")
-print(f"Recomendaciones: {recomendaciones}")
+    # Ejecutar el sistema de urgencias
+    clasificacion, recomendaciones = gestionar_urgencias(historial_clinico, sintomas_paciente, pruebas_complementarias)
+    print(f"Clasificación: {clasificacion}")
+    print(f"Recomendaciones: {recomendaciones}")
